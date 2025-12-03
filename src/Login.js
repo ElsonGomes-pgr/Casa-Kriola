@@ -49,14 +49,16 @@ export default function Login({navigation}){
                     />
                 </View>
 
-                <View>
-                    <TouchableOpacity
-                        onPress={()=> {}}
-                    />
-                    <View>
-                        <Text >Sign in</Text>
-                    </View>
-                </View>
+                
+
+                <TouchableOpacity onPress={()=> {}} style={styles.btn}>
+                    <Text style={{color: '#fff'}} >Sign in</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={()=>navigation.navigate('Register') } style={styles.btn}>
+                    <Text style={{color: '#fff'}} >Create Acount</Text>
+                </TouchableOpacity>
+
             </View>
         </View>
 
@@ -115,6 +117,12 @@ const styles = StyleSheet.create({
     fontSize: 15
    },
    btn:{
-    backgroundColor:'#7a5a5aff'
+    backgroundColor:'#4fa7daff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    marginTop: 3,
+    height: 34,
+    marginBottom: 12
    }
 });
