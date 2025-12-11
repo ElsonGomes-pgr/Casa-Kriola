@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button ,TextInput, TouchableOpacity} from 'react-native';
+import { View, Text, StyleSheet, Button ,TextInput, TouchableOpacity, ImageBackground} from 'react-native';
 import {useState} from 'react';
 import { Image } from 'react-native';
 
@@ -12,55 +12,62 @@ export default function Login({navigation}){
     const [password, setPassword] = useState(0); 
 
     return(
-        <View style ={styles.container}>
-            <View style={styles.header}>
-                <Image
-                    source={require("../assets/logo.png")}
-                    style={styles.logo}
-                />
-            </View>
+        <ImageBackground
+            source={require('../assets/Background.jpeg')}
+            style={styles.background}
+            resizeMode="cover"
+        >
 
-            <Text style={styles.title}>Segn in to Casa - Kriola</Text>
-
-            <Text style={styles.subtitle}>Get access to your home here</Text>
-
-        
-            <View style={styles.box}>
-                <View style={styles.input}>
-                    <Text style={styles.inputLabel}>Email address</Text>
-
-                    <TextInput
-                    keyboardType='email-address'
-                    placeholder='email@gmail.com' 
-                    value={box.email}
-                    onChangeText={email => setBox({...box, email})}
-                    style={styles.inputControl}
+            <View style ={styles.container}>
+                <View style={styles.header}>
+                    <Image
+                        source={require("../assets/logo.png")}
+                        style={styles.logo}
                     />
                 </View>
 
-                <View style={styles.input}>
-                    <Text style={styles.inputLabel}>Password address</Text>
+                <Text style={styles.title}>Segn in to Casa - Kriola</Text>
 
-                    <TextInput
-                    placeholder='*********' 
-                    value={box.password}
-                    onChangeText={password => setBox({...box, password})}
-                    style={styles.inputControl}
-                    />
+                <Text style={styles.subtitle}>Get access to your home here</Text>
+
+            
+                <View style={styles.box}>
+                    <View style={styles.input}>
+                        <Text style={styles.inputLabel}>Email address</Text>
+
+                        <TextInput
+                        keyboardType='email-address'
+                        placeholder='email@gmail.com' 
+                        value={box.email}
+                        onChangeText={email => setBox({...box, email})}
+                        style={styles.inputControl}
+                        />
+                    </View>
+
+                    <View style={styles.input}>
+                        <Text style={styles.inputLabel}>Password address</Text>
+
+                        <TextInput
+                        placeholder='*********' 
+                        value={box.password}
+                        onChangeText={password => setBox({...box, password})}
+                        style={styles.inputControl}
+                        />
+                    </View>
+
+                    
+
+                    <TouchableOpacity onPress={()=> {}} style={styles.btn}>
+                        <Text style={{color: '#fff'}} >Sign in</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={()=>navigation.navigate('Register') } style={styles.btn}>
+                        <Text style={{color: '#fff'}} >Create Acount</Text>
+                    </TouchableOpacity>
+
                 </View>
-
-                
-
-                <TouchableOpacity onPress={()=> {}} style={styles.btn}>
-                    <Text style={{color: '#fff'}} >Sign in</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={()=>navigation.navigate('Register') } style={styles.btn}>
-                    <Text style={{color: '#fff'}} >Create Acount</Text>
-                </TouchableOpacity>
-
             </View>
-        </View>
+        </ImageBackground>
 
     );
 }
@@ -68,7 +75,6 @@ export default function Login({navigation}){
 const styles = StyleSheet.create({
    container: {
     flex: 1,
-    backgroundColor: '#eee',
     padding: 24
    },
    header:{
@@ -90,7 +96,8 @@ const styles = StyleSheet.create({
     fontSize: 29,
     fontWeight:'700',
     marginBottom: 6,
-    textAlign: 'center'
+    textAlign: 'center',
+    color: '#fff'
    },
    subtitle:{
     fontSize: 15,
@@ -124,5 +131,10 @@ const styles = StyleSheet.create({
     marginTop: 3,
     height: 34,
     marginBottom: 12
-   }
+   },
+   background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    }
 });
