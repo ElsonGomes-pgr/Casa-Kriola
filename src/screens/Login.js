@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useState } from 'react';
 
-export default function LoginScreen({ navigation }) {
+export default function Login({ navigation }) {
   const [form, setForm] = useState({
     email: '',
     password: '',

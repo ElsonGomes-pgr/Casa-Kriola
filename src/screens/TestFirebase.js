@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Button, Alert } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { auth } from "../config/firebaseConfig";
 
 export default function TestFirebase() {
 
