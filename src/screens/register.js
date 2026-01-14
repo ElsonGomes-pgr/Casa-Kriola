@@ -15,7 +15,7 @@ export default function Register({navigation}){
         <View style={styles.topBar}>
             <View style={styles.header}>
                 <Image
-                    source={require("../assets/logo.png")}
+                    source={require("../../assets/logo.png")}
                     style={styles.logo}
                 />
             </View>
