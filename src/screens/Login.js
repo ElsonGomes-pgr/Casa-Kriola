@@ -1,5 +1,9 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useState } from 'react';
+import { Alert } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../config/firebaseConfig';
+
 
 export default function Login({ navigation }) {
   const [form, setForm] = useState({
@@ -7,9 +11,25 @@ export default function Login({ navigation }) {
     password: '',
   });
 
-  function handleLogin() {
-    console.log(form);
-  }
+  async function handleLogin() {
+    if (!form.email || !form.password) {
+        Alert.alert('Erro', 'Preencha email e senha');
+        return;
+    }
+
+    try {
+        await signInWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+        );
+
+        navigation.replace('Home');
+    } catch (error) {
+        Alert.alert('Erro ao entrar', error.message);
+    }
+}
+
 
   return (
     <View style={styles.container}>

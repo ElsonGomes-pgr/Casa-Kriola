@@ -4,15 +4,19 @@ import {useState} from 'react';
 import { Image } from 'react-native';
 
 export default function Register({navigation}){
-    const [box, setBox] = useState({
+    const [form, setForm] = useState({
         name: '',
         email: '',
         password: '',
+        confirmPassword: ''
     })
+
+    function handleRegister(){
+        console.log(form);
+    }
 
    return(
     <View style={styles.container}>
-        <View style={styles.topBar}>
             <View style={styles.header}>
                 <Image
                     source={require("../../assets/logo.png")}
@@ -20,71 +24,108 @@ export default function Register({navigation}){
                 />
             </View>
 
-            <Text style={styles.title}>Sign Up</Text>
+            <Text style={styles.title}>Create Account</Text>
 
 
-            <View style={styles.box}>
-                <Text style ={styles.textController}>Name</Text>
-                <TextInput style={styles.inputController}
-                    placeholder='Name'
-                    value={box.name}
-                    onChangeText={name => setBox({...box, name})}
+            <View style={styles.form}>
+                <Text style ={styles.label}>Name</Text>
+                <TextInput 
+                style={styles.input}
+                    placeholder='Your name'
+                    value={form.name}
+                    onChangeText={(name) => setForm({...form, name})}
                 />
 
-                <Text style ={styles.textController}>Email</Text>
-                <TextInput style={styles.inputController}
+                <Text style ={styles.label}>Email</Text>
+                <TextInput
+                    style={styles.input}
                     placeholder='exmpl@gmail.com'
-                    value={box.name}
-                    onChangeText={email => setBox({...box, email})}
+                    keyboardType="email-address"
+                    value={form.email}
+                    onChangeText={(email) => setForm({...form, email})}
                 />
 
-                <Text style ={styles.textController}>Name</Text>
-                <TextInput style={styles.inputController}
-                    placeholder='*******'
-                    value={box.name}
-                    onChangeText={name => setBox({...box, name})}
+                <Text style ={styles.label}>Password</Text>
+                <TextInput 
+                style={styles.input}
+                    placeholder='******'
+                    secureTextEntry
+                    value={form.password}
+                    onChangeText={(password) => setForm({...form, password})}
                 />
+
+                <Text style={styles.label}>Confirm Password</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="********"
+                    secureTextEntry
+                    value={form.confirmPassword}
+                    onChangeText={(confirmPassword) =>
+                        setForm({ ...form, confirmPassword })
+                    }
+                />
+
+                <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                    <Text style={styles.buttonText}>Create account</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Text style={styles.link}>Already have an account? Sign in</Text>
+                </TouchableOpacity>
             </View>
-
-        </View>
     </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#eee',
         flex: 1,
-        justifyContent:'flex-start',
-        paddingTop: 60,
-        padding: 24
+        padding: 24,
+        justifyContent: 'center',
     },
     header:{
-        marginVertical: 36
+        alignItems: 'center',
+        marginBottom: 24,
     },
      logo: {
         width: 80,
         height: 80,
-        alignSelf: 'center',
         borderRadius: 10
    },
     title:{
-        marginTop: 24,
-        marginRight: 44,
-        fontWeight: 'bold',
         fontSize: 24,
-        marginBottom: 45
+        fontWeight: '700',
+        textAlign: 'center',
+        marginBottom: 24,
     },
-    inputController:{
-        backgroundColor:'#ffff',
-        borderRadius: 10,
-        padding: 14,
-        marginBottom: 20
+    form:{
+        marginTop: 10,
     },
-    textController:{
-        marginBottom: 10,
+    label:{
+        bheight: 44,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        marginBottom: 16,
+    },
+    button: {
+        backgroundColor: '#4fa7da',
+        height: 44,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 10,
+     },
+     buttonText: {
+        color: '#fff',
         fontWeight: '600',
-        fontWeight: 'bold'
-    }
+    },
+    link: {
+        marginTop: 16,
+        textAlign: 'center',
+        color: '#4fa7da',
+  },
 
 });
