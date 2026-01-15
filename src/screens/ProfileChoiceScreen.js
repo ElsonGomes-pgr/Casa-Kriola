@@ -3,7 +3,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth } from '../config/firebaseConfig';
 import { db } from '../config/firebaseConfig';
 
-export default function ProfileChoiceScreen() {
+export default function ProfileChoiceScreen({ navigation }) {
     async function selectRole(role) {
     const user = auth.currentUser;
 
@@ -23,7 +23,8 @@ export default function ProfileChoiceScreen() {
 
       navigation.replace('Home');
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar o perfil');
+      console.log('Firestore error:', error);
+      Alert.alert('Erro Firestore', error.message);
     }
   }
 
