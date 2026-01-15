@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, Button ,TextInput, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
 import { Image } from 'react-native';
+import { Alert } from 'react-native';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../config/firebaseConfig';
 
 export default function Register({navigation}){
     const [form, setForm] = useState({
@@ -11,9 +14,36 @@ export default function Register({navigation}){
         confirmPassword: ''
     })
 
-    function handleRegister(){
-        console.log(form);
+    async function handleRegister() {
+        const { name, email, password, confirmPassword } = form;
+
+        if (!name || !email || !password || !confirmPassword) {
+            Alert.alert('Erro', 'Preencha todos os campos');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert('Erro', 'As senhas não coincidem');
+            return;
+        }
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+            );
+
+            await updateProfile(userCredential.user, {
+            displayName: name,
+            });
+
+            navigation.replace('ProfileChoice');
+        } catch (error) {
+            Alert.alert('Erro ao criar conta', error.message);
+        }
     }
+
 
    return(
     <View style={styles.container}>
