@@ -2,23 +2,42 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../config/firebaseConfig';
 
 
-
-
-export default function Splash  () {
-    const navigation = useNavigation();
+export default function Splash  ({ navigation }) {
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setTimeout(() => {
-            if (user) {
-            navigation.replace('Home');
-            } else {
-            navigation.replace('Login');
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            setTimeout(async () => {
+            if (!user) {
+              navigation.replace('Login');
             }
-        }, 1000);
+
+            try{
+              const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+              if (!userDoc.exists()) {
+                navigation.replace('ProfileChoice');
+                return;
+              }
+
+              const { role } = userDoc.data();
+
+              if (role === 'seeker') {
+                navigation.replace('HomeSeeker');
+              } else if (role === 'owner') {
+                navigation.replace('HomeOwner');  
+              } else {
+                navigation.replace('ProfileChoice');
+              }
+            } catch (error) {
+              console.log(error);
+              navigation.replace('Login');
+            }
+        }, 1500);
+        
     });
 
     return unsubscribe;
