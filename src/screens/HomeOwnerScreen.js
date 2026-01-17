@@ -1,10 +1,33 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  Alert, } from 'react-native';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebaseConfig'; 
 
 export default function HomeOwnerScreen() {
   const [tipo, setTipo] = useState('');
   const [preco, setPreco] = useState('');
   const [descricao, setDescricao] = useState('');
+
+  const handleSaveImovel = async () => {
+  try {
+    await addDoc(collection(db, 'imoveis'), {
+      tipo: tipo,
+      preco: preco,
+      descricao: descricao,
+      createdAt: serverTimestamp(),
+    });
+
+    Alert.alert('Sucesso', 'Imóvel salvo com sucesso!');
+  } catch (error) { 
+    console.log(error);
+    Alert.alert('Erro', 'Erro ao salvar imóvel');
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -34,6 +57,10 @@ export default function HomeOwnerScreen() {
         onChangeText={setDescricao}
         multiline
       />
+
+      <TouchableOpacity style={styles.button} onPress={handleSaveImovel}>
+        <Text style={styles.buttonText}>Salvar Imóvel</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -63,4 +90,16 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  button: {
+    backgroundColor: '#000',
+    padding: 15,
+    borderRadius: 6,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#FFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  }
 });
