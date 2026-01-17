@@ -4,14 +4,31 @@ import { Text,
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Image,
+  View,
   Alert, } from 'react-native';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig'; 
+import * as ImagePicker from 'expo-image-picker';
+
 
 export default function HomeOwnerScreen() {
   const [tipo, setTipo] = useState('');
   const [preco, setPreco] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [fotos, setFotos] = useState([]); 
+
+    const pickImage = async () => {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.7,
+      });
+      if (!result.canceled) {
+        const selectedUris = result.assets.map(asset => asset.uri);
+        setFotos([...fotos, ...selectedUris]);
+      }
+    };
 
   const handleSaveImovel = async () => {
   try {
@@ -57,6 +74,20 @@ export default function HomeOwnerScreen() {
         onChangeText={setDescricao}
         multiline
       />
+
+      <TouchableOpacity style={styles.button} onPress={pickImage}>
+        <Text style={styles.buttonText}>Adicionar Fotos</Text>
+      </TouchableOpacity>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 }}>
+        {fotos.map((uri, index) => (
+          <Image
+            key={index}
+            source={{ uri }}
+            style={{ width: 80, height: 80, marginRight: 10, marginBottom: 10, borderRadius: 6 }}
+          />
+        ))}
+      </View>
 
       <TouchableOpacity style={styles.button} onPress={handleSaveImovel}>
         <Text style={styles.buttonText}>Salvar Imóvel</Text>
