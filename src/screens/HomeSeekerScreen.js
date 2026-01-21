@@ -1,9 +1,24 @@
-import { View, Text, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import MapView from 'react-native-maps';
+
 
 export default function HomeSeekerScreen() {
+  const SAO_VICENTE_REGION = {
+    latitude: 16.8627,   
+    longitude: -24.9956, 
+    latitudeDelta: 0.05,  
+    longitudeDelta: 0.05, 
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home do Inquilino</Text>
+      <MapView
+        style={styles.map}
+        initialRegion={SAO_VICENTE_REGION}
+        showsUserLocation={true} 
+        showsMyLocationButton={true} 
+      />
     </View>
   );
 }
@@ -11,11 +26,8 @@ export default function HomeSeekerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  text: {
-    fontSize: 20,
-    fontWeight: '600',
+  map: {
+    flex: 1, 
   },
 });
