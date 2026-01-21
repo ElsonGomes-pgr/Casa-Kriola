@@ -28,6 +28,7 @@ export default function Login({ navigation }) {
     } catch (error) {
         Alert.alert('Erro ao entrar', error.message);
     }
+    
 }
 
 
