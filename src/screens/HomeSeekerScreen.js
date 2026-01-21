@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import MapView from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
+import { mockProperties } from '../../Data/mockProperties';
 
 
 export default function HomeSeekerScreen() {
@@ -18,7 +19,19 @@ export default function HomeSeekerScreen() {
         initialRegion={SAO_VICENTE_REGION}
         showsUserLocation={true} 
         showsMyLocationButton={true} 
-      />
+      >
+       {mockProperties.map((property) => (
+          <Marker
+            key={property.id}
+            coordinate={{
+              latitude: property.latitude,
+              longitude: property.longitude,
+            }}
+            title={property.title}
+            description={`${property.price.toLocaleString()} CVE`}
+          />
+        ))}
+      </MapView>
     </View>
   );
 }

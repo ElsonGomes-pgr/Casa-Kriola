@@ -1,0 +1,68 @@
+
+
+export const mockProperties = [
+  {
+    id: '1',
+    title: 'Quarto aconchegante no Centro',
+    type: 'Quarto',
+    price: 15000,
+    latitude: 16.8627,
+    longitude: -24.9956,
+  },
+  {
+    id: '2',
+    title: 'T0 moderno em Mindelo',
+    type: 'T0',
+    price: 25000,
+    latitude: 16.8890,
+    longitude: -24.9810,
+  },
+  {
+    id: '3',
+    title: 'T1 com vista para o mar',
+    type: 'T1',
+    price: 35000,
+    latitude: 16.8750,
+    longitude: -24.9900,
+  },
+  {
+    id: '4',
+    title: 'T2 espaçoso perto da praia',
+    type: 'T2',
+    price: 50000,
+    latitude: 16.8500,
+    longitude: -25.0000,
+  },
+  {
+    id: '5',
+    title: 'Quarto para estudante',
+    type: 'Quarto',
+    price: 12000,
+    latitude: 16.8700,
+    longitude: -24.9850,
+  },
+  {
+    id: '6',
+    title: 'T1 no centro histórico',
+    type: 'T1',
+    price: 32000,
+    latitude: 16.8650,
+    longitude: -25.0020,
+  },
+  {
+    id: '7',
+    title: 'T3 familiar com garagem',
+    type: 'T3',
+    price: 65000,
+    latitude: 16.8800,
+    longitude: -24.9750,
+  },
+  {
+    id: '8',
+    title: 'T0 recém renovado',
+    type: 'T0',
+    price: 22000,
+    latitude: 16.8580,
+    longitude: -24.9920,
+  },
+];
