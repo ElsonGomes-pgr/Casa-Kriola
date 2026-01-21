@@ -12,6 +12,23 @@ export default function HomeSeekerScreen() {
     longitudeDelta: 0.05, 
   };
 
+  const getPinColor = (type) => {
+    switch (type) {
+      case 'Quarto':
+        return '#4A90E2';
+      case 'T0':
+        return '#50C878'; 
+      case 'T1':
+        return '#F5A623';   
+      case 'T2':
+        return '#E94B3C'; 
+      case 'T3':
+        return '#9013FE'; 
+      default:
+        return '#FF0000'; 
+    }
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -29,6 +46,7 @@ export default function HomeSeekerScreen() {
             }}
             title={property.title}
             description={`${property.price.toLocaleString()} CVE`}
+            pinColor={getPinColor(property.type)}
           />
         ))}
       </MapView>
