@@ -1,10 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView,FlatList} from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { mockProperties } from '../../../Data/mockProperties';
+import PropertyCard from '../../Componentes/PropertyCard';
 
 
 export default function HomeSeekerScreen() {
+  const userName = "João Silva";
+
   const SAO_VICENTE_REGION = {
     latitude: 16.8627,
     longitude: -24.9956,
@@ -12,6 +15,7 @@ export default function HomeSeekerScreen() {
     longitudeDelta: 0.05,
   };
 
+  
   const getPinColor = (type) => {
     switch (type) {
       case 'Quarto':
@@ -29,14 +33,28 @@ export default function HomeSeekerScreen() {
     }
   };
 
+
   const handleMarkerPress = (property) => {
     console.log('Imóvel clicado:', property.title);
   };
 
+    const handleCardPress = (property) => {
+    console.log('Card clicado:', property.title);
+  };
+
+  const renderPropertyCard = ({ item }) => (
+    <PropertyCard
+      property={item}
+      onPress={() => handleCardPress(item)}
+      isSelected={false} 
+    />
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Header em breve...</Text>
+        <Text style={styles.greeting}>Olá, {userName}</Text>
+        <Text style={styles.subtitle}>Encontre seu lar ideal</Text>
       </View>
 
       <View style={styles.mapContainer}>
@@ -80,7 +98,15 @@ export default function HomeSeekerScreen() {
       </View>
 
       <View style={styles.listContainer}>
-        <Text style={styles.placeholder}>Lista de imóveis em breve...</Text>
+        <Text style={styles.listTitle}>Imóveis Disponíveis</Text>
+        <FlatList
+          data={mockProperties}
+          renderItem={renderPropertyCard}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        />
       </View>
     </SafeAreaView>
   );
@@ -92,15 +118,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    height: 60,
     backgroundColor: '#5995C6',
-    justifyContent: 'center',
     paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingTop: 55,
+    borderRadius: 20
   },
-  headerText: {
+  greeting: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subtitle: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.9,
   },
   mapContainer: {
     flex: 0.5,
@@ -111,12 +144,17 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 0.3,
     backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: 16,
   },
-  placeholder: {
-    fontSize: 16,
-    color: '#999',
+  listTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 20,
+    marginBottom: 12,
+  },
+  listContent: {
+    paddingHorizontal: 12,
   },
   calloutContainer: {
     backgroundColor: 'white',
