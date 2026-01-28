@@ -14,7 +14,7 @@ export default function Splash  ({ navigation }) {
             
               navigation.replace('Login');
             
-        }, 1500);
+        }, 2000);
         
     });
 
