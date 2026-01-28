@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
-import { mockProperties } from '../../Data/mockProperties';
+import { mockProperties } from '../../../Data/mockProperties';
 
 
 export default function HomeSeekerScreen() {
@@ -29,13 +29,16 @@ export default function HomeSeekerScreen() {
     }
   };
 
-
   const handleMarkerPress = (property) => {
     console.log('Imóvel clicado:', property.title);
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Header em breve...</Text>
+      </View>
+
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
@@ -79,22 +82,34 @@ export default function HomeSeekerScreen() {
       <View style={styles.listContainer}>
         <Text style={styles.placeholder}>Lista de imóveis em breve...</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
+  },
+  header: {
+    height: 60,
+    backgroundColor: '#5995C6',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
   },
   mapContainer: {
-    flex: 0.6,
+    flex: 0.5,
   },
   map: {
     flex: 1,
   },
   listContainer: {
-    flex: 0.4,
+    flex: 0.3,
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',

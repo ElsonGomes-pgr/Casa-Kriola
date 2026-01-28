@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../config/firebaseConfig';
+import { db } from '../../config/firebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 
 const CLOUDINARY_CLOUD_NAME = 'dsndjgcrm'; 

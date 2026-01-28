@@ -6,8 +6,8 @@ import LoginScreen from '../screens/Login';
 import HomeScreen from '../screens/Home';
 import RegisterScreen from '../screens/register';
 import ProfileChoiceScreen from '../screens/ProfileChoiceScreen';
-import HomeSeekerScreen from '../screens/HomeSeekerScreen';
-import HomeOwnerScreen from '../screens/HomeOwnerScreen';
+import HomeSeekerScreen from '../screens/seeker/HomeSeekerScreen';
+import HomeOwnerScreen from '../screens/owner/HomeOwnerScreen';
 
 const Stack = createNativeStackNavigator();
 
