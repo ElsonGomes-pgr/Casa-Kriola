@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{ useState }  from 'react';
 import { View, Text, StyleSheet, SafeAreaView,FlatList} from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { mockProperties } from '../../../Data/mockProperties';
@@ -7,6 +7,7 @@ import PropertyCard from '../../Componentes/PropertyCard';
 
 export default function HomeSeekerScreen() {
   const userName = "João Silva";
+  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
 
   const SAO_VICENTE_REGION = {
     latitude: 16.8627,
@@ -36,17 +37,19 @@ export default function HomeSeekerScreen() {
 
   const handleMarkerPress = (property) => {
     console.log('Imóvel clicado:', property.title);
+    setSelectedPropertyId(property.id);
   };
 
     const handleCardPress = (property) => {
     console.log('Card clicado:', property.title);
+    setSelectedPropertyId(property.id);
   };
 
   const renderPropertyCard = ({ item }) => (
     <PropertyCard
       property={item}
       onPress={() => handleCardPress(item)}
-      isSelected={false} 
+      isSelected={item.id === selectedPropertyId} 
     />
   );
 
