@@ -1,280 +1,100 @@
-import React, { useState } from 'react';
-import {
-  Text,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  View,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../config/firebaseConfig';
-import * as ImagePicker from 'expo-image-picker';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { auth, db } from '../../config/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
-const CLOUDINARY_CLOUD_NAME = 'dsndjgcrm'; 
-const CLOUDINARY_UPLOAD_PRESET = 'imoveis_preset'; 
-const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 export default function HomeOwnerScreen() {
-  const [tipo, setTipo] = useState('');
-  const [preco, setPreco] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [fotos, setFotos] = useState([]);
-  const [uploading, setUploading] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [loadingUser, setLoadingUser] = useState(true);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      const selectedUris = result.assets.map((asset) => asset.uri);
-      setFotos([...fotos, ...selectedUris]);
-    }
-  };
-
-  const uploadToCloudinary = async (imageUri) => {
-    try {
-      const formData = new FormData();
-      
-      formData.append('file', {
-        uri: imageUri,
-        type: 'image/jpeg', 
-        name: `photo_${Date.now()}.jpg`,
-      });
-      
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      
-      formData.append('folder', 'imoveis');
-
-      const response = await fetch(CLOUDINARY_URL, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro no upload para Cloudinary');
-      }
-
-      const data = await response.json();
-      
-      return data.secure_url;
-    } catch (error) {
-      console.error('Erro ao fazer upload:', error);
-      throw error;
-    }
-  };
-
-  const handleSaveImovel = async () => {
-    if (!tipo || !preco || !descricao) {
-      Alert.alert('Atenção', 'Preencha todos os campos');
-      return;
-    }
-
-    if (fotos.length === 0) {
-      Alert.alert('Atenção', 'Adicione pelo menos uma foto');
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const uploadedUrls = [];
-
-      for (let i = 0; i < fotos.length; i++) {
-        const uri = fotos[i];
-        console.log(`Uploading imagem ${i + 1}/${fotos.length}...`);
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const currentUser = auth.currentUser;
         
-        const cloudinaryUrl = await uploadToCloudinary(uri);
-        uploadedUrls.push(cloudinaryUrl);
+        if (currentUser) {
+          if (currentUser.displayName) {
+            setUserName(currentUser.displayName);
+            setLoadingUser(false);
+            return;
+          }
+
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const name = userData.name || userData.nome || userData.displayName || 'Usuário';
+            setUserName(name);
+          } else {
+            const emailName = currentUser.email?.split('@')[0] || 'Usuário';
+            setUserName(emailName);
+          }
+        } else {
+          setUserName('Visitante');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar nome do usuário:', error);
+        setUserName('Usuário');
+      } finally {
+        setLoadingUser(false);
       }
+    };
 
-      await addDoc(collection(db, 'imoveis'), {
-        tipo: tipo,
-        preco: preco,
-        descricao: descricao,
-        fotos: uploadedUrls, 
-        createdAt: serverTimestamp(),
-      });
-
-      setTipo('');
-      setPreco('');
-      setDescricao('');
-      setFotos([]);
-
-      Alert.alert('Sucesso', 'Imóvel cadastrado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar imóvel:', error);
-      Alert.alert('Erro', 'Não foi possível salvar o imóvel. Tente novamente.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removePhoto = (index) => {
-    const newFotos = fotos.filter((_, i) => i !== index);
-    setFotos(newFotos);
-  };
+    fetchUserName();
+  }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Cadastro de Espaço para Aluguel</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Tipo do imóvel (Casa, Apartamento...)"
-        value={tipo}
-        onChangeText={setTipo}
-        editable={!uploading}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Preço mensal"
-        value={preco}
-        onChangeText={setPreco}
-        keyboardType="numeric"
-        editable={!uploading}
-      />
-
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Descrição do imóvel"
-        value={descricao}
-        onChangeText={setDescricao}
-        multiline
-        editable={!uploading}
-      />
-
-      <TouchableOpacity
-        style={[styles.button, uploading && styles.buttonDisabled]}
-        onPress={pickImage}
-        disabled={uploading}
-      >
-        <Text style={styles.buttonText}>Adicionar Fotos</Text>
-      </TouchableOpacity>
-
-      {fotos.length > 0 && (
-        <View style={styles.photosContainer}>
-          {fotos.map((uri, index) => (
-            <View key={index} style={styles.photoWrapper}>
-              <Image source={{ uri }} style={styles.photo} />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removePhoto(index)}
-                disabled={uploading}
-              >
-                <Text style={styles.removeButtonText}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
-
-      <TouchableOpacity
-        style={[styles.button, uploading && styles.buttonDisabled]}
-        onPress={handleSaveImovel}
-        disabled={uploading}
-      >
-        {uploading ? (
-          <ActivityIndicator color="#FFF" />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        {loadingUser ? (
+          <ActivityIndicator size="small" color="white" />
         ) : (
-          <Text style={styles.buttonText}>Salvar Imóvel</Text>
+          <>
+            <Text style={styles.greeting}>Olá, {userName}</Text>
+            <Text style={styles.subtitle}>Gerencie seus imóveis</Text>
+          </>
         )}
-      </TouchableOpacity>
+      </View>
 
-      {uploading && (
-        <Text style={styles.uploadingText}>
-          Fazendo upload das imagens... Aguarde.
-        </Text>
-      )}
-    </ScrollView>
+      <View style={styles.content}>
+        <Text style={styles.placeholder}>Dashboard em construção...</Text>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
+    flex: 1,
+    backgroundColor: '#F5F5F5',
   },
-  title: {
-    fontSize: 22,
+  header: {
+    backgroundColor: '#61B566',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingTop: 55,
+    borderRadius: 29
+  },
+  greeting: {
+    color: 'white',
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+    marginBottom: 4,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#CCC',
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 15,
-    fontSize: 16,
+  subtitle: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.9,
   },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  button: {
-    backgroundColor: '#000',
-    padding: 15,
-    borderRadius: 6,
-    marginTop: 10,
-  },
-  buttonDisabled: {
-    backgroundColor: '#999',
-  },
-  buttonText: {
-    color: '#FFF',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  photosContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 10,
-  },
-  photoWrapper: {
-    position: 'relative',
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  photo: {
-    width: 80,
-    height: 80,
-    borderRadius: 6,
-  },
-  removeButton: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: '#FF0000',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+  content: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  removeButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  uploadingText: {
-    marginTop: 15,
-    textAlign: 'center',
-    color: '#666',
-    fontStyle: 'italic',
+  placeholder: {
+    fontSize: 16,
+    color: '#999',
   },
 });
