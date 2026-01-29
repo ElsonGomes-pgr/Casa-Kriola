@@ -10,6 +10,8 @@ export default function HomeSeekerScreen() {
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
 
     const flatListRef = useRef(null);
+    const mapRef = useRef(null);
+
 
 
   const SAO_VICENTE_REGION = {
@@ -56,6 +58,16 @@ export default function HomeSeekerScreen() {
     const handleCardPress = (property) => {
     console.log('Card clicado:', property.title);
     setSelectedPropertyId(property.id);
+
+    if (mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: property.latitude,
+        longitude: property.longitude,
+        latitudeDelta: 0.02, 
+        longitudeDelta: 0.02,
+      }, 1000); 
+    }
+
   };
 
   const renderPropertyCard = ({ item }) => (
@@ -75,6 +87,7 @@ export default function HomeSeekerScreen() {
 
       <View style={styles.mapContainer}>
         <MapView
+          ref={mapRef}
           style={styles.map}
           initialRegion={SAO_VICENTE_REGION}
           showsUserLocation={true}
