@@ -1,13 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator,   TouchableOpacity, ScrollView  } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator,   TouchableOpacity, ScrollView,FlatList  } from 'react-native';
 import { auth, db } from '../../config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
+import MinhaCasaCard from '../../Componentes/MinhaCasaCard';
 
+const MOCK_PROPERTIES = [
+  {
+    id: '1',
+    title: 'Apartamento T2 no Centro',
+    type: 'T2',
+    price: 45000,
+    status: 'disponivel',
+    address: 'Rua da Praia, Mindelo',
+    photos: ['https://via.placeholder.com/400x300'],
+  },
+  {
+    id: '2',
+    title: 'Quarto individual com banheiro',
+    type: 'Quarto',
+    price: 15000,
+    status: 'ocupado',
+    address: 'Av. Marginal, São Vicente',
+    photos: [],
+  },
+  {
+    id: '3',
+    title: 'Casa T3 com vista para o mar',
+    type: 'T3',
+    price: 65000,
+    status: 'manutencao',
+    address: 'Baia das Gatas',
+    photos: ['https://via.placeholder.com/400x300'],
+  },
+];
 
 export default function HomeOwnerScreen({navigation}) {
+  
   const [userName, setUserName] = useState('');
   const [loadingUser, setLoadingUser] = useState(true);
 
+  const [properties, setProperties] = useState(MOCK_PROPERTIES);
+  const [loadingProperties, setLoadingProperties] = useState(false);
   useEffect(() => {
     const fetchUserName = async () => {
       try {
@@ -44,10 +77,30 @@ export default function HomeOwnerScreen({navigation}) {
 
     fetchUserName();
   }, []);
-    const handleAddProperty = () => {
+  
+  const handleAddProperty = () => {
     console.log('Adicionar nova casa clicado');
   };
 
+  const handlePropertyPress = (property) => {
+    console.log('Casa clicada:', property.title);
+  };
+
+  const renderPropertyCard = ({ item }) => (
+    <MinhaCasaCard
+      property={item}
+      onPress={() => handlePropertyPress(item)}
+    />
+  );
+  const renderEmptyList = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyIcon}>🏠</Text>
+      <Text style={styles.emptyTitle}>Nenhuma casa cadastrada</Text>
+      <Text style={styles.emptyText}>
+        Comece adicionando seu primeiro imóvel para locação
+      </Text>
+    </View>
+  );
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -61,23 +114,40 @@ export default function HomeOwnerScreen({navigation}) {
         )}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.content}>
         <TouchableOpacity 
           style={styles.addButton}
           onPress={handleAddProperty}
           activeOpacity={0.8}
         >
-          <View style={styles.addButtonIcon}>
+           <View style={styles.addButtonIcon}>
             <Text style={styles.addButtonIconText}>➕</Text>
           </View>
           <Text style={styles.addButtonText}>Adicionar Nova Casa</Text>
         </TouchableOpacity>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Minhas Casas</Text>
-          <Text style={styles.placeholder}>Lista em breve...</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Minhas Casas</Text>
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>{properties.length}</Text>
+            </View>
+          </View>
+
+          {loadingProperties ? (
+            <ActivityIndicator size="large" color="#61B566" style={styles.loader} />
+          ) : (
+            <FlatList
+              data={properties}
+              renderItem={renderPropertyCard}
+              keyExtractor={(item) => item.id}
+              ListEmptyComponent={renderEmptyList}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={properties.length === 0 ? styles.emptyListContent : null}
+            />
+          )}
         </View>
-      </ScrollView>
+        </View>
     </SafeAreaView>
   );
 }
