@@ -1,4 +1,4 @@
-import React,{ useState }  from 'react';
+import React,{ useState, useRef }  from 'react';
 import { View, Text, StyleSheet, SafeAreaView,FlatList} from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { mockProperties } from '../../../Data/mockProperties';
@@ -8,6 +8,9 @@ import PropertyCard from '../../Componentes/PropertyCard';
 export default function HomeSeekerScreen() {
   const userName = "João Silva";
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
+
+    const flatListRef = useRef(null);
+
 
   const SAO_VICENTE_REGION = {
     latitude: 16.8627,
@@ -38,6 +41,16 @@ export default function HomeSeekerScreen() {
   const handleMarkerPress = (property) => {
     console.log('Imóvel clicado:', property.title);
     setSelectedPropertyId(property.id);
+
+   const index = mockProperties.findIndex(p => p.id === property.id);
+    
+    if (index !== -1 && flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index: index,
+        animated: true,
+        viewPosition: 0.5, 
+      });
+    }
   };
 
     const handleCardPress = (property) => {
@@ -103,12 +116,16 @@ export default function HomeSeekerScreen() {
       <View style={styles.listContainer}>
         <Text style={styles.listTitle}>Imóveis Disponíveis</Text>
         <FlatList
+          ref={flatListRef}
           data={mockProperties}
           renderItem={renderPropertyCard}
           keyExtractor={(item) => item.id}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
+          onScrollToIndexFailed={(info) => {
+            console.log('Scroll failed:', info);
+          }}
         />
       </View>
     </SafeAreaView>
