@@ -23,9 +23,9 @@ export default function ProfileChoiceScreen({ navigation }) {
       });
 
       if (role === 'seeker') {
-        navigation.replace('HomeSeekerScreen');
+        navigation.replace('HomeSeeker  ');
       } else if (role === 'owner') {
-        navigation.replace('HomeOwnerScreen');
+        navigation.replace('HomeOwner');
       }
     } catch (error) {
       console.log('Erro ao salvar role:', error);
