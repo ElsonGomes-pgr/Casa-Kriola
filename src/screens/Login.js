@@ -1,36 +1,90 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
-
+import { auth, db } from '../config/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function Login({ navigation }) {
   const [form, setForm] = useState({
     email: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
 
+
+  const checkUserRoleAndNavigate = async (uid) => {
+    try {
+      const userDocRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData.role;
+
+        console.log('Role do usuário:', role);
+
+        if (role === 'seeker') {
+          navigation.replace('HomeSeeker');
+        } else if (role === 'owner') {
+          navigation.replace('HomeOwner');
+        } else {
++          navigation.replace('ProfileChoice');
+        }
+      } else {
+        console.log('Usuário sem documento no Firestore');
+        navigation.replace('ProfileChoice');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar role:', error);
+      navigation.replace('ProfileChoice');
+    }
+  };
+
+ 
   async function handleLogin() {
     if (!form.email || !form.password) {
-        Alert.alert('Erro', 'Preencha email e senha');
-        return;
+      Alert.alert('Atenção', 'Preencha email e senha');
+      return;
     }
 
+    setLoading(true);
+
     try {
-        await signInWithEmailAndPassword(
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         form.email,
         form.password
-        );
+      );
 
-        navigation.replace('Home');
+      const user = userCredential.user;
+      console.log('Login bem-sucedido:', user.uid);
+
+      await checkUserRoleAndNavigate(user.uid);
+
     } catch (error) {
-        Alert.alert('Erro ao entrar', error.message);
-    }
-    
-}
+      console.error('Erro ao entrar:', error);
+      
+      let errorMessage = 'Não foi possível fazer login. Tente novamente.';
+      
+      if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Email ou senha incorretos.';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'Usuário não encontrado.';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Senha incorreta.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Erro de conexão. Verifique sua internet.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Email inválido.';
+      }
 
+      Alert.alert('Erro ao entrar', errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -39,43 +93,68 @@ export default function Login({ navigation }) {
           source={require('../../assets/logo.png')}
           style={styles.logo}
         />
+        <Text style={styles.appName}>Casa Kriola</Text>
       </View>
 
-      <Text style={styles.title}>Sign in to Casa Kriola</Text>
-      <Text style={styles.subtitle}>Get access to your home here</Text>
+      <Text style={styles.title}>Bem-vindo de volta</Text>
+      <Text style={styles.subtitle}>Entre para acessar sua conta</Text>
 
       <View style={styles.form}>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
             keyboardType="email-address"
-            placeholder="email@gmail.com"
+            placeholder="seuemail@gmail.com"
+            placeholderTextColor="#999"
             value={form.email}
             onChangeText={(email) => setForm({ ...form, email })}
             style={styles.input}
+            editable={!loading}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>Senha</Text>
           <TextInput
-            placeholder="********"
+            placeholder="••••••••"
+            placeholderTextColor="#999"
             secureTextEntry
             value={form.password}
             onChangeText={(password) => setForm({ ...form, password })}
             style={styles.input}
+            editable={!loading}
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Sign in</Text>
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={handleLogin}
+          disabled={loading}
+          activeOpacity={0.8}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Entrar</Text>
+          )}
         </TouchableOpacity>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>ou</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('Register')}
+          disabled={loading}
         >
-          <Text style={styles.secondaryText}>Create account</Text>
+          <Text style={[styles.secondaryText, loading && styles.textDisabled]}>
+            Criar nova conta
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -87,25 +166,33 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
+    color: '#333',
   },
   subtitle: {
-    fontSize: 14,
-    color: '#777',
+    fontSize: 15,
+    color: '#666',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -116,36 +203,69 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 8,
+    color: '#333',
   },
   input: {
-    height: 44,
+    height: 50,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E0E0E0',
+    fontSize: 16,
+    color: '#333',
   },
   button: {
     backgroundColor: '#4fa7da',
-    height: 44,
-    borderRadius: 8,
+    height: 50,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
+    shadowColor: '#4fa7da',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  buttonDisabled: {
+    backgroundColor: '#a0d4ed',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   buttonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 17,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#999',
+    fontSize: 14,
   },
   secondaryButton: {
-    marginTop: 16,
     alignItems: 'center',
+    padding: 12,
   },
   secondaryText: {
     color: '#4fa7da',
-    fontWeight: '500',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  textDisabled: {
+    opacity: 0.5,
   },
 });

@@ -23,7 +23,7 @@ export default function ProfileChoiceScreen({ navigation }) {
       });
 
       if (role === 'seeker') {
-        navigation.replace('HomeSeeker  ');
+        navigation.replace('HomeSeeker');
       } else if (role === 'owner') {
         navigation.replace('HomeOwner');
       }
