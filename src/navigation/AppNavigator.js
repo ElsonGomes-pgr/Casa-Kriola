@@ -8,6 +8,7 @@ import RegisterScreen from '../screens/register';
 import ProfileChoiceScreen from '../screens/ProfileChoiceScreen';
 import HomeSeekerScreen from '../screens/seeker/HomeSeekerScreen';
 import HomeOwnerScreen from '../screens/owner/HomeOwnerScreen';
+import AddPropertyScreen from '../screens/owner/AddPropertyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="ProfileChoice" component={ProfileChoiceScreen} />
+        <Stack.Screen name="AddProperty" component={AddPropertyScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

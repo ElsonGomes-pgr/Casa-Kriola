@@ -1,46 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator,   TouchableOpacity, ScrollView,FlatList  } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  SafeAreaView, 
+  ActivityIndicator,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl 
+} from 'react-native';
 import { auth, db } from '../../config/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import MinhaCasaCard from '../../Componentes/MinhaCasaCard';
 
-const MOCK_PROPERTIES = [
-  {
-    id: '1',
-    title: 'Apartamento T2 no Centro',
-    type: 'T2',
-    price: 45000,
-    status: 'disponivel',
-    address: 'Rua da Praia, Mindelo',
-    photos: ['https://via.placeholder.com/400x300'],
-  },
-  {
-    id: '2',
-    title: 'Quarto individual com banheiro',
-    type: 'Quarto',
-    price: 15000,
-    status: 'ocupado',
-    address: 'Av. Marginal, São Vicente',
-    photos: [],
-  },
-  {
-    id: '3',
-    title: 'Casa T3 com vista para o mar',
-    type: 'T3',
-    price: 65000,
-    status: 'manutencao',
-    address: 'Baia das Gatas',
-    photos: ['https://via.placeholder.com/400x300'],
-  },
-];
-
-export default function HomeOwnerScreen({navigation}) {
-  
+export default function HomeOwnerScreen({ navigation }) {
   const [userName, setUserName] = useState('');
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const [properties, setProperties] = useState(MOCK_PROPERTIES);
-  const [loadingProperties, setLoadingProperties] = useState(false);
+  const [properties, setProperties] = useState([]);
+  const [loadingProperties, setLoadingProperties] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+
   useEffect(() => {
     const fetchUserName = async () => {
       try {
@@ -77,13 +58,67 @@ export default function HomeOwnerScreen({navigation}) {
 
     fetchUserName();
   }, []);
+
   
-  const handleAddProperty = () => {
-    console.log('Adicionar nova casa clicado');
+  const fetchProperties = async () => {
+    try {
+      setLoadingProperties(true);
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        console.log('Usuário não autenticado');
+        setProperties([]);
+        return;
+      }
+
+      const propertiesRef = collection(db, 'properties');
+      const q = query(propertiesRef, where('ownerId', '==', currentUser.uid));
+      
+      const querySnapshot = await getDocs(q);
+      
+      const fetchedProperties = [];
+      querySnapshot.forEach((doc) => {
+        fetchedProperties.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      console.log(`${fetchedProperties.length} casas encontradas`);
+      setProperties(fetchedProperties);
+
+    } catch (error) {
+      console.error('Erro ao buscar propriedades:', error);
+      setProperties([]);
+    } finally {
+      setLoadingProperties(false);
+    }
   };
 
+ 
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+ 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProperties();
+    setRefreshing(false);
+  };
+
+  const handleAddProperty = () => {
+    if (navigation) {
+    navigation.navigate('AddProperty');
+    } else {
+      console.log('Navigation não disponível');
+    }
+  };
+
+  
   const handlePropertyPress = (property) => {
     console.log('Casa clicada:', property.title);
+
   };
 
   const renderPropertyCard = ({ item }) => (
@@ -92,15 +127,30 @@ export default function HomeOwnerScreen({navigation}) {
       onPress={() => handlePropertyPress(item)}
     />
   );
-  const renderEmptyList = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>🏠</Text>
-      <Text style={styles.emptyTitle}>Nenhuma casa cadastrada</Text>
-      <Text style={styles.emptyText}>
-        Comece adicionando seu primeiro imóvel para locação
-      </Text>
-    </View>
-  );
+
+
+  const renderEmptyList = () => {
+    if (loadingProperties) {
+      return null; 
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyIcon}>🏠</Text>
+        <Text style={styles.emptyTitle}>Nenhuma casa cadastrada</Text>
+        <Text style={styles.emptyText}>
+          Comece adicionando seu primeiro imóvel para locação
+        </Text>
+        <TouchableOpacity 
+          style={styles.emptyButton}
+          onPress={handleAddProperty}
+        >
+          <Text style={styles.emptyButtonText}>Adicionar Agora</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -120,7 +170,7 @@ export default function HomeOwnerScreen({navigation}) {
           onPress={handleAddProperty}
           activeOpacity={0.8}
         >
-           <View style={styles.addButtonIcon}>
+          <View style={styles.addButtonIcon}>
             <Text style={styles.addButtonIconText}>➕</Text>
           </View>
           <Text style={styles.addButtonText}>Adicionar Nova Casa</Text>
@@ -129,13 +179,18 @@ export default function HomeOwnerScreen({navigation}) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Minhas Casas</Text>
-            <View style={styles.countBadge}>
-              <Text style={styles.countText}>{properties.length}</Text>
-            </View>
+            {!loadingProperties && (
+              <View style={styles.countBadge}>
+                <Text style={styles.countText}>{properties.length}</Text>
+              </View>
+            )}
           </View>
 
-          {loadingProperties ? (
-            <ActivityIndicator size="large" color="#61B566" style={styles.loader} />
+          {loadingProperties && properties.length === 0 ? (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#61B566" />
+              <Text style={styles.loaderText}>Carregando suas casas...</Text>
+            </View>
           ) : (
             <FlatList
               data={properties}
@@ -143,11 +198,19 @@ export default function HomeOwnerScreen({navigation}) {
               keyExtractor={(item) => item.id}
               ListEmptyComponent={renderEmptyList}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={properties.length === 0 ? styles.emptyListContent : null}
+              contentContainerStyle={properties.length === 0 ? styles.emptyListContent : styles.listContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={['#61B566']}
+                  tintColor="#61B566"
+                />
+              }
             />
           )}
         </View>
-        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -161,8 +224,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#61B566',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    paddingTop: 55,
-    borderRadius: 29
+    paddingTop: 40,
+    borderRadius:19
   },
   greeting: {
     color: 'white',
@@ -174,6 +237,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     opacity: 0.9,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
   },
   addButton: {
     backgroundColor: '#61B566',
@@ -201,28 +268,84 @@ const styles = StyleSheet.create({
   addButtonIconText: {
     fontSize: 24,
   },
-  content: {
-    flex: 1,
-    padding: 20
-  },
- addButtonText: {
+  addButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
   section: {
-    marginTop: 10,
+    flex: 1,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
+    marginRight: 10,
+  },
+  countBadge: {
+    backgroundColor: '#61B566',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  countText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loaderText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  emptyListContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyIcon: {
+    fontSize: 80,
     marginBottom: 16,
   },
-  placeholder: {
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#666',
     textAlign: 'center',
-    marginTop: 20,
+    paddingHorizontal: 40,
+    marginBottom: 24,
+  },
+  emptyButton: {
+    backgroundColor: '#61B566',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  emptyButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
