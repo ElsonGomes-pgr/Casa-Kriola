@@ -185,14 +185,23 @@ export default function HomeOwnerScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        {loadingUser ? (
-          <ActivityIndicator size="small" color="white" />
-        ) : (
-          <>
-            <Text style={styles.greeting}>Olá, {userName}</Text>
-            <Text style={styles.subtitle}>Gerencie seus imóveis</Text>
-          </>
-        )}
+        <View style={styles.headerText}>
+          {loadingUser ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <>
+              <Text style={styles.greeting}>Olá, {userName}</Text>
+              <Text style={styles.subtitle}>Gerencie seus imóveis</Text>
+            </>
+          )}
+        </View>
+
+  <TouchableOpacity 
+    style={styles.logoutButton}
+    onPress={handleLogout}
+  >
+    <Text style={styles.logoutText}>🚪</Text>
+  </TouchableOpacity>
         
       </View>
 
@@ -256,9 +265,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#61B566',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    paddingTop: 40,
-    borderRadius:19
+    paddingTop: 50,
+    paddingBottom: 20,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
+  headerText: {
+  flex: 1,
+},
   greeting: {
     color: 'white',
     fontSize: 24,
@@ -380,4 +395,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  logoutButton: {
+  padding: 8,
+  },
+  logoutText: {
+    fontSize: 22,
+  },
+
 });
