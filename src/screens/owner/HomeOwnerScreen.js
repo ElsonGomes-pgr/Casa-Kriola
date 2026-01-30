@@ -7,11 +7,13 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   FlatList,
-  RefreshControl 
+  RefreshControl,
+  Alert 
 } from 'react-native';
 import { auth, db } from '../../config/firebaseConfig';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import MinhaCasaCard from '../../Componentes/MinhaCasaCard';
+import { signOut } from 'firebase/auth';
 
 export default function HomeOwnerScreen({ navigation }) {
   const [userName, setUserName] = useState('');
@@ -58,6 +60,35 @@ export default function HomeOwnerScreen({ navigation }) {
 
     fetchUserName();
   }, []);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair',
+      'Tem certeza que deseja sair?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            } catch (error) {
+              console.error('Erro ao fazer logout:', error);
+              Alert.alert('Erro', 'Não foi possível sair. Tente novamente.');
+            }
+          },
+        },
+      ]
+    );
+};
 
   
   const fetchProperties = async () => {
@@ -162,6 +193,7 @@ export default function HomeOwnerScreen({ navigation }) {
             <Text style={styles.subtitle}>Gerencie seus imóveis</Text>
           </>
         )}
+        
       </View>
 
       <View style={styles.content}>

@@ -1,13 +1,14 @@
 import React,{ useState, useRef, useEffect }  from 'react';
-import { View, Text, StyleSheet, SafeAreaView,FlatList} from 'react-native';
+import { View,TouchableOpacity, Text, StyleSheet, SafeAreaView,FlatList, ActivityIndicator, Alert} from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { mockProperties } from '../../../Data/mockProperties';
 import PropertyCard from '../../Componentes/PropertyCard';
 import { auth, db } from '../../config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 
-export default function HomeSeekerScreen() {
+export default function HomeSeekerScreen({navigation}) {
 
   const [userName, setUserName] = useState('');
   const [loadingUser, setLoadingUser] = useState(true);
@@ -120,17 +121,61 @@ export default function HomeSeekerScreen() {
     />
   );
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair',
+      'Tem certeza que deseja sair?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            } catch (error) {
+              console.error('Erro ao fazer logout:', error);
+              Alert.alert('Erro', 'Não foi possível sair. Tente novamente.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Olá, {userName}</Text>
-          <Text style={styles.subtitle}>Encontre seu lar ideal</Text>
-        </View>
+        <View style={{ flex: 1 }}>
+          {loadingUser ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <>
+              <Text style={styles.greeting}>Olá, {userName}</Text>
+              <Text style={styles.subtitle}>Encontre seu lar ideal</Text>
+            </>
+          )}
+        </View> 
         
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{mockProperties.length}</Text>
-          <Text style={styles.countLabel}>disponíveis</Text>
+        <View style={styles.headerButtons}>
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{mockProperties.length}</Text>
+            <Text style={styles.countLabel}>disponíveis</Text>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutText}>🚪</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -321,5 +366,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#5995C6',
     fontWeight: '600',
+  },
+  headerButtons: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+  },
+  logoutButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  logoutText: {
+    fontSize: 20,
   },
 });
