@@ -1,5 +1,5 @@
 import React,{ useState, useRef, useEffect }  from 'react';
-import { View,TouchableOpacity, Text, StyleSheet, SafeAreaView,FlatList, ActivityIndicator, Alert} from 'react-native';
+import { View,TouchableOpacity, Text, StyleSheet, SafeAreaView,FlatList, ActivityIndicator, Alert, Image} from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { mockProperties } from '../../../Data/mockProperties';
 import PropertyCard from '../../Componentes/PropertyCard';
@@ -174,7 +174,11 @@ export default function HomeSeekerScreen({navigation}) {
             style={styles.logoutButton}
             onPress={handleLogout}
           >
-            <Text style={styles.logoutText}>🚪</Text>
+            <Image
+                source={require('../../../assets/1024.png')}
+                style={styles.logoutIcon}
+                resizeMode="contain"
+              />
           </TouchableOpacity>
         </View>
       </View>
@@ -382,7 +386,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  logoutText: {
-    fontSize: 20,
+  logoutIcon: {
+    width: 44,
+    height: 36,
   },
 });

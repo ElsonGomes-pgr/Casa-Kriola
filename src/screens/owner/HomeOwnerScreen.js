@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
-  Alert 
+  Alert,
+  Image 
 } from 'react-native';
 import { auth, db } from '../../config/firebaseConfig';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -200,7 +201,11 @@ export default function HomeOwnerScreen({ navigation }) {
     style={styles.logoutButton}
     onPress={handleLogout}
   >
-    <Text style={styles.logoutText}>🚪</Text>
+    <Image
+      source={require('../../../assets/1024.png')}
+      style={styles.logoutIcon}
+      resizeMode="contain"
+    />
   </TouchableOpacity>
         
       </View>
@@ -398,8 +403,8 @@ const styles = StyleSheet.create({
   logoutButton: {
   padding: 8,
   },
-  logoutText: {
-    fontSize: 22,
+  logoutIcon: {
+    width: 44,
+    height: 36,
   },
-
 });
