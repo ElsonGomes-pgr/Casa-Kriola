@@ -17,8 +17,8 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="HomeOwner" component={HomeOwnerScreen} />
-        <Stack.Screen name="HomeSeeker" component={HomeSeekerScreen} />
         <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="HomeSeeker" component={HomeSeekerScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="ProfileChoice" component={ProfileChoiceScreen} />

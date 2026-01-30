@@ -14,11 +14,18 @@ import {
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../config/firebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
+import MapView, { Marker } from 'react-native-maps';
 
 const CLOUDINARY_CLOUD_NAME = 'dsndjgcrm'; 
 const CLOUDINARY_UPLOAD_PRESET = 'imoveis_preset'; 
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
+  const SAO_VICENTE_REGION = {
+    latitude: 16.8627,
+    longitude: -24.9956,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  };
 
 export default function AddPropertyScreen({ navigation }) {
   const [title, setTitle] = useState('');
@@ -29,6 +36,7 @@ export default function AddPropertyScreen({ navigation }) {
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(false);
 
+  const [location, setLocation] = useState(null);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -99,6 +107,11 @@ export default function AddPropertyScreen({ navigation }) {
       return;
     }
 
+    if (!location) {
+      Alert.alert('Atenção', 'Marque a localização do imóvel no mapa');
+      return;
+    }
+
     if (photos.length === 0) {
       Alert.alert('Atenção', 'Adicione pelo menos uma foto');
       return;
@@ -130,6 +143,8 @@ export default function AddPropertyScreen({ navigation }) {
         address: address.trim() || '',
         description: description.trim(),
         photos: uploadedUrls,
+        latitude: location.latitude,
+        longitude: location.longitude,
         status: 'disponivel', 
         ownerId: currentUser.uid,
         createdAt: serverTimestamp(),
@@ -157,6 +172,8 @@ export default function AddPropertyScreen({ navigation }) {
       setAddress('');
       setDescription('');
       setPhotos([]);
+      setLocation(null);
+
 
     } catch (error) {
       console.error('Erro ao salvar imóvel:', error);
@@ -170,6 +187,12 @@ export default function AddPropertyScreen({ navigation }) {
   const removePhoto = (index) => {
     const newPhotos = photos.filter((_, i) => i !== index);
     setPhotos(newPhotos);
+  };
+
+  const handleMarkerDragEnd = (e) => {
+    const { latitude, longitude } = e.nativeEvent.coordinate;
+    setLocation({ latitude, longitude });
+    console.log('Nova localização:', latitude, longitude);
   };
 
   return (
@@ -237,6 +260,29 @@ export default function AddPropertyScreen({ navigation }) {
           textAlignVertical="top"
           editable={!uploading}
         />
+
+        <Text style={styles.label}>📍 Localização *</Text>
+        <Text style={styles.hint}>Arraste o pin para marcar a localização exata</Text>
+        
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={SAO_VICENTE_REGION}
+          >
+            <Marker
+              coordinate={location || SAO_VICENTE_REGION}
+              draggable
+              onDragEnd={handleMarkerDragEnd}
+              pinColor="#61B566"
+            />
+          </MapView>
+        </View>
+
+        {location && (
+          <Text style={styles.coordsText}>
+            📍 Lat: {location.latitude.toFixed(6)}, Lng: {location.longitude.toFixed(6)}
+          </Text>
+        )}
 
         <Text style={styles.label}>Fotos *</Text>
         <TouchableOpacity
@@ -320,6 +366,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
+    hint: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+    fontStyle: 'italic',
+  },
   input: {
     backgroundColor: 'white',
     borderWidth: 1,
@@ -332,6 +384,22 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     textAlignVertical: 'top',
+  },
+  mapContainer: {
+    height: 300,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#61B566',
+    },
+  map: {
+    flex: 1,
+  },
+  coordsText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
   },
   photoButton: {
     backgroundColor: 'white',
